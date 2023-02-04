@@ -1,0 +1,26 @@
+name: Example workflow for calling
+on:
+  workflow_dispatch:
+    inputs:
+      caller_run_id:
+        type: string
+        description: "The identifier used to link a workflow dispatch event to the created workflow run."
+        required: true
+      fail:
+        type: boolean
+        description: "If set to 'true', the workflow will fail."
+        required: false
+        default: false
+jobs:
+  caller_run:
+    name: Link to caller run with ID ${{ inputs.caller_run_id }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: "echo I'm never called"
+        if: ${{ !always() }}
+  fail:
+    name: Fail run if desired
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "::error::I'm failing!" && exit 1
+        if: ${{ inputs.fail }}
