@@ -30,3 +30,7 @@ require (
 	golang.org/x/text v0.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace (
+	github.com/charmbracelet/bubbletea v0.23.2 => ../bubbletea
+)
