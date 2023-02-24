@@ -21,7 +21,7 @@ func main() {
 	if err != nil {
 		switch err.(type) {
 		case bubblewrap.CancelError:
-			log.Fatal("[warn] user cancelled")
+			log.Fatal("[warn] user canceled")
 		default:
 			log.Fatal(fmt.Errorf("error getting choice: %w", err))
 		}

@@ -36,7 +36,7 @@ func TestChooseUpdate(t *testing.T) {
 			cmds:     []tea.Cmd{nil, nil, nil, nil, tea.Quit},
 		},
 		{
-			name:     "cancelled with ctrl+c",
+			name:     "canceled with ctrl+c",
 			choices:  []string{"one", "two", "three"},
 			expected: []string{},
 			inputs:   []tea.KeyMsg{{Type: tea.KeyCtrlC}},
