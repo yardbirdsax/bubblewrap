@@ -7,3 +7,8 @@ test:
 .PHONY: tidy
 tidy:
 	go mod tidy
+.PHONY: fmtcheck
+fmtcheck:
+	@test -z "$$(go fmt ./...)"
+.PHONY: fmt
+	@go fmt ./...
