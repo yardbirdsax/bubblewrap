@@ -12,6 +12,33 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// WithCursorStyle sets the lipgloss Style for the rendered cursor. See
+// https://github.com/charmbracelet/lipgloss.
+func WithCursorStyle(style lipgloss.Style) func(*chooser) error {
+	return func(c *chooser) error {
+		c.cursorStyle = style
+		return nil
+	}
+}
+
+// WithItemStyle stes the lipgloss Style for non selected items in the list.
+// See https://github.com/charmbracelet/lipgloss.
+func WithItemStyle(style lipgloss.Style) func(*chooser) error {
+	return func(c *chooser) error {
+		c.itemStyle = style
+		return nil
+	}
+}
+
+// WithSelectedItemStyle stes the lipgloss Style for selected items in the list.
+// See https://github.com/charmbracelet/lipgloss.
+func WithSelectedItemStyle(style lipgloss.Style) func(*chooser) error {
+	return func(c *chooser) error {
+		c.selectedItemStyle = style
+		return nil
+	}
+}
+
 // Choose lets you prompt the user with a list of options
 // and allows them to select one or more of them.
 func Choose(options []string, optFns ...func(*chooser) error) ([]string, error) {
@@ -99,7 +126,7 @@ func (c *chooser) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up":
 			if c.currentIndex > 0 {
 				c.currentIndex--
-				if c.currentIndex < (c.paginator.Page + 1) * c.paginator.PerPage {
+				if c.currentIndex < (c.paginator.Page + 1) * c.paginator.PerPage && c.paginator.Page > 0 {
 					c.paginator.Page--
 				}
 			}
@@ -125,12 +152,16 @@ func (c *chooser) View() string {
 		}
 
 		if opt.selected {
-			viewBuilder.WriteString(c.itemStyle.Render("[X] "))
+			viewBuilder.WriteString(c.selectedItemStyle.Render("[X] "))
 		} else {
 			viewBuilder.WriteString(c.itemStyle.Render("[ ] "))
 		}
 
-		viewBuilder.WriteString(c.itemStyle.Render(opt.value))
+		if opt.selected {
+			viewBuilder.WriteString(c.selectedItemStyle.Render(opt.value))
+		} else {
+			viewBuilder.WriteString(c.itemStyle.Render(opt.value))
+		}
 		viewBuilder.WriteString("\n")
 	}
 

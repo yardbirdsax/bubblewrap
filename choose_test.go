@@ -7,11 +7,12 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestChoose(t *testing.T) {
+func TestChooseUpdate(t *testing.T) {
 	testCases := []struct {
 		name     string
 		choices  []string
@@ -77,7 +78,7 @@ func TestChoose(t *testing.T) {
 					continue
 				}
 				ev := tc.cmds[i]
-				if (ev == nil && av == nil) {
+				if ev == nil && av == nil {
 					continue
 				}
 				if (ev == nil && av != nil) || (ev != nil && av == nil) {
@@ -86,11 +87,145 @@ func TestChoose(t *testing.T) {
 				}
 				actualVal := av()
 				expectedVal := ev()
-				if (expectedVal != actualVal) {
+				if expectedVal != actualVal {
 					t.Errorf("result for actual value (%v) does not match result for expected value (%v)", actualVal, expectedVal)
 					continue
 				}
 			}
 		})
 	}
+}
+
+func TestChooseView(t *testing.T) {
+	testCases := []struct {
+		name         string
+		initialModel func() *chooser
+		msgs         []tea.Msg
+		expectedView string
+	}{
+		{
+			name: "basic list",
+			initialModel: func() *chooser {
+				c, _ := NewChooser([]string{"one", "two", "three"})
+				return c
+			},
+			expectedView: `>[ ] one
+ [ ] two
+ [ ] three
+`,
+		},
+		{
+			name: "basic list with selected",
+			initialModel: func() *chooser {
+				c, _ := NewChooser([]string{"one", "two", "three"})
+				c.options[0].selected = true
+				return c
+			},
+			expectedView: `>[X] one
+ [ ] two
+ [ ] three
+`,
+		},
+		{
+			name: "basic list with un-selected",
+			initialModel: func() *chooser {
+				c, _ := NewChooser([]string{"one", "two", "three"})
+				return c
+			},
+			msgs: []tea.Msg{
+				tea.KeyMsg{Type: tea.KeySpace},
+				tea.KeyMsg{Type: tea.KeySpace},
+			},
+			expectedView: `>[ ] one
+ [ ] two
+ [ ] three
+`,
+		},
+		{
+			name: "paged list",
+			initialModel: func() *chooser {
+				c, _ := NewChooser([]string{"one", "two", "three", "four"})
+				c.paginator.PerPage = 2
+				return c
+			},
+			msgs: []tea.Msg{
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyDown},
+			},
+			expectedView: ">[ ] three\n [ ] four\n",
+		},
+		{
+			name: "paged list backwards",
+			initialModel: func() *chooser {
+				c, _ := NewChooser([]string{"one", "two", "three", "four"})
+				c.paginator.PerPage = 2
+				return c
+			},
+			msgs: []tea.Msg{
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyUp},
+			},
+			expectedView: " [ ] one\n>[ ] two\n",
+		},
+		{
+			name: "paged list backwards with selected",
+			initialModel: func() *chooser {
+				c, _ := NewChooser([]string{"one", "two", "three", "four"})
+				c.paginator.PerPage = 2
+				return c
+			},
+			msgs: []tea.Msg{
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeySpace},
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeySpace},
+				tea.KeyMsg{Type: tea.KeyUp},
+			},
+			expectedView: " [ ] one\n>[X] two\n",
+		},
+		{
+			name: "paged list backwards with list smaller than page size",
+			initialModel: func() *chooser {
+				c, _ := NewChooser([]string{"one", "two", "three", "four"})
+				c.paginator.PerPage = 10
+				return c
+			},
+			msgs: []tea.Msg{
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyUp},
+			},
+			expectedView: " [ ] one\n>[ ] two\n [ ] three\n [ ] four\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			m := tc.initialModel()
+			for _, msg := range tc.msgs {
+				m.Update(msg)
+			}
+			actualView := m.View()
+			assert.Equal(t, tc.expectedView, actualView, "expected view does not match actual view")
+		})
+	}
+}
+
+func TestWithStyles(t *testing.T) {
+	expectedCursorStyle := lipgloss.NewStyle().Bold(true)
+	expectedItemStyle := lipgloss.NewStyle().Underline(true)
+	expectedSelectedItemStyle := lipgloss.NewStyle().Italic(true)
+
+	c, err := NewChooser(
+		[]string{"one"},
+		WithCursorStyle(expectedCursorStyle),
+		WithItemStyle(expectedItemStyle),
+		WithSelectedItemStyle(expectedSelectedItemStyle),
+	)
+
+	assert.NoError(t, err, "NewChooser returned unexpected error")
+	assert.EqualValues(t, expectedCursorStyle, c.cursorStyle, "cursor style did not match")
+	assert.EqualValues(t, expectedItemStyle, c.itemStyle, "item style did not match")
+	assert.EqualValues(t, expectedSelectedItemStyle, c.selectedItemStyle, "selected item style did not match")
 }
