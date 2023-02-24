@@ -70,6 +70,7 @@ type chooser struct {
 	stdout       io.Writer
 	ctx          context.Context
 	aborted      bool
+	quitting     bool
 	paginator    paginator.Model
 	cursor       string
 
@@ -119,21 +120,23 @@ func (c *chooser) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down":
 			if c.currentIndex < len(c.options)-1 {
 				c.currentIndex++
-				if c.currentIndex >= (c.paginator.Page + 1) * c.paginator.PerPage {
+				if c.currentIndex >= (c.paginator.Page+1)*c.paginator.PerPage {
 					c.paginator.Page++
 				}
 			}
 		case "up":
 			if c.currentIndex > 0 {
 				c.currentIndex--
-				if c.currentIndex < (c.paginator.Page + 1) * c.paginator.PerPage && c.paginator.Page > 0 {
+				if c.currentIndex < (c.paginator.Page+1)*c.paginator.PerPage && c.paginator.Page > 0 {
 					c.paginator.Page--
 				}
 			}
 		case "enter":
+			c.quitting = true
 			return c, tea.Quit
 		case "ctrl+c", "esc":
 			c.aborted = true
+			c.quitting = true
 			return c, tea.Quit
 		}
 	}
@@ -141,6 +144,9 @@ func (c *chooser) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (c *chooser) View() string {
+	if c.quitting {
+		return ""
+	}
 	viewBuilder := strings.Builder{}
 
 	first, last := c.paginator.GetSliceBounds(len(c.options))

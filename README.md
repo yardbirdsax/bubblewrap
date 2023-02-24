@@ -16,9 +16,6 @@ in simpler ways without fancy TUIs. This is why I wrote `bubblewrap`, so that I 
 API / entrypoint into common operations without constantly writing the same boilerplate code around
 things like handling different kinds of key presses.
 
-Currently `bubblewrap` contains a very simple abstraction of [the `textinput`
-bubble](https://github.com/charmbracelet/bubbles/#text-input). Over time and as needs arise I might
-add additional wraps for things like choosing items in a list or multiline text. PRs for additional
-features are welcome!
+PRs for additional features are welcome!
 
 Examples can be found in the [`examples` directory](examples/).

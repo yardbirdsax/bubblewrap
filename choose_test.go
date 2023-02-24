@@ -69,6 +69,7 @@ func TestChooseUpdate(t *testing.T) {
 			assert.Equal(t, tc.expected, actual)
 			assert.NoError(t, err, "choose returned unexpected error")
 			assert.Equal(t, tc.aborted, c.aborted, "aborted was not the expected value")
+			assert.True(t, c.quitting, "quitting was not set")
 			assert.Len(t, actualCmds, len(tc.cmds), "number of actual and expected commands not the same")
 			// This little snippet is necessary because you can't simply assert that
 			// two funcs are equal to each other.
