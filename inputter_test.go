@@ -65,16 +65,16 @@ func TestInput(t *testing.T) {
 
 	t.Run("with cancel", func(t *testing.T) {
 		i := NewInputter()
-    in := bytes.NewBuffer([]byte{})
-    in.WriteString("nothing\u001B")
-    i.stdin = in
-    expectedError := CancelError(fmt.Errorf("an error"))
+		in := bytes.NewBuffer([]byte{})
+		in.WriteString("nothing\u001B")
+		i.stdin = in
+		expectedError := CancelError(fmt.Errorf("an error"))
 
-    value, err := i.input("prompt")
+		value, err := i.input("prompt")
 
-    assert.Equal(t, "", value, "value was not empty string")
-    assert.True(t, i.aborted, "aborted was not set properly")
-    assert.IsType(t, expectedError, err, "error returned was not of expected type")
+		assert.Equal(t, "", value, "value was not empty string")
+		assert.True(t, i.aborted, "aborted was not set properly")
+		assert.IsType(t, expectedError, err, "error returned was not of expected type")
 	})
 
 }
