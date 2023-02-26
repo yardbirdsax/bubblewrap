@@ -190,7 +190,7 @@ func (c *chooser) choose() ([]string, error) {
 		return []string{}, err
 	}
 	if c.aborted {
-		return []string{}, CancelError(fmt.Errorf("user cancelled operation"))
+		return []string{}, CancelError(fmt.Errorf("user canceled operation"))
 	}
 	return c.selected(), nil
 }
